@@ -1,4 +1,9 @@
+<!DOCTYPE html>
+<html>
+<head>
 {@wphead /}
+</head>
+<body>
     {#UserActivate}
 
         <div id="signup-content" class="widecolumn">
@@ -46,3 +51,5 @@
     </script>
     {/UserActivate}
 {@wpfooter /}
+</body>
+</html>

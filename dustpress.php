@@ -150,8 +150,8 @@ final class DustPress {
 		}
 		else {
 			// Use user-activate.php and user-activate.dust to replace wp-activate.php
-			$template = 'UserActivate';
-			$debugs[] = 'UserActivate';
+			$template = apply_filters( 'dustpress/template/useractivate', 'UserActivate' );
+			$debugs[] = $template;
 
 			// Prevent 404 on multisite sub pages.
 			global $wp_query;

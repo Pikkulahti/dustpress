@@ -19,7 +19,6 @@
     "wordpress", "dustjs", "dustpress", "theme", "framework", "javascript"
   ],
   "license": "GPL-3.0",
-  "minimum-stability": "dev",
   "autoload": {
     "files": ["dustpress.php"]
   }

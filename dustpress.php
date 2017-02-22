@@ -6,7 +6,7 @@ Description: Dust.js templating system for WordPress
 Author: Miika Arponen & Ville Siltala / Geniem Oy
 Author URI: http://www.geniem.com
 License: GPLv3
-Version: 1.5.3
+Version: 1.5.4
 */
 
 final class DustPress {
@@ -31,6 +31,9 @@ final class DustPress {
 
 	// Paths for locating files
 	private $paths;
+
+	// Are we on an activation page
+	private $activate;
 
 	// Registered custom ajax functions
 	private $ajax_functions;
@@ -83,9 +86,19 @@ final class DustPress {
             }
         }
 
+   
 		// Add create_instance to right action hook if we are not on the admin side
 		if ( $this->want_autoload() ) {
 			add_filter( 'template_include', [ $this, 'create_instance' ] );
+			
+			// If we are on wp-activate.php hook into activate_header
+			if ( strpos( $_SERVER['REQUEST_URI'], 'wp-activate.php' ) !== false ) {
+				$this->activate = true;
+				// Run create_instance for use partial and model
+				add_action( 'activate_header', [ $this, 'create_instance' ] );
+				// Kill original wp-activate.php execution
+				add_action( 'activate_header', function() { die(); } );
+			}
 		}
 		else if ( $this->is_dustpress_ajax() ) {
 			add_filter( 'template_include', [ $this, 'create_ajax_instance' ] );
@@ -110,28 +123,41 @@ final class DustPress {
 	public function create_instance() {
 		global $post;
 
-		if ( is_object( $post ) && isset( $post->ID ) ) {
-			$post_id = $post->ID;
-		}
-		else {
-			$post_id = null;
-		}
-
-		// Filter for wanted post ID
-		$new_post = apply_filters( "dustpress/router", $post_id );
-
-		// If developer wanted a post ID, make it happen
-		if ( ! is_null( $new_post ) ) {
-			$post = get_post( $new_post );
-
-			setup_postdata( $post );
-		}
-
 		// Initialize an array for debugging.
 		$debugs = [];
 
-		// Get current template name tidied up a bit.
-		$template = $this->get_template_filename( $debugs );
+		if ( ! $this->activate ) {
+
+			if ( is_object( $post ) && isset( $post->ID ) ) {
+				$post_id = $post->ID;
+			}
+			else {
+				$post_id = null;
+			}
+
+			// Filter for wanted post ID
+			$new_post = apply_filters( "dustpress/router", $post_id );
+
+			// If developer wanted a post ID, make it happen
+			if ( ! is_null( $new_post ) ) {
+				$post = get_post( $new_post );
+
+				setup_postdata( $post );
+			}
+
+			// Get current template name tidied up a bit.
+			$template = $this->get_template_filename( $debugs );
+		}
+		else {
+			// Use user-activate.php and user-activate.dust to replace wp-activate.php
+			$template = apply_filters( 'dustpress/template/useractivate', 'UserActivate' );
+			$debugs[] = $template;
+
+			// Prevent 404 on multisite sub pages.
+			global $wp_query;
+			$wp_query->is_404 = false;
+
+		}
 
 		$template = apply_filters( "dustpress/template", $template );
 
@@ -827,9 +853,13 @@ final class DustPress {
 				return ! defined( "DOING_AJAX" );
 			},
 			function() {
-				if ( defined( 'WP_USE_THEMES' ) ) {
+				if ( strpos( $_SERVER['REQUEST_URI'], 'wp-activate') > 0 ) {
+					return true;
+				}
+				elseif ( defined( 'WP_USE_THEMES' ) ) {
 					return WP_USE_THEMES !== false;
-				} else {
+				}
+				else {
 					return false;
 				}
 			},

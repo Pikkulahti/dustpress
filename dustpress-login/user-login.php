@@ -498,9 +498,9 @@ protected function login_state_password() {
 	
 	// init login header
 
-    $login_header->title = __('Lost Password');
-    $login_header->message = '<p class="message">' . __('Please enter your username or email address. You will receive a link to create a new password via email.') . '</p>';
-    $login_hader->wp_error = $errors;
+    $print->login_header_title = __('Lost Password');
+    $print->login_header_message = '<p class="message">' . __('Please enter your username or email address. You will receive a link to create a new password via email.') . '</p>';
+    $print->login_header_errors = $errors;
     
 
 	$user_login = isset($_POST['user_login']) ? wp_unslash($_POST['user_login']) : '';

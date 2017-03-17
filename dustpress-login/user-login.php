@@ -536,3 +536,110 @@ endif;
     $print->js->input_id = 'user_login';
 
 }
+<?php
+
+protected function login_state_resetpass {
+    list( $rp_path ) = explode( '?', wp_unslash( $_SERVER['REQUEST_URI'] ) );
+	$rp_cookie = 'wp-resetpass-' . COOKIEHASH;
+	if ( isset( $_GET['key'] ) ) {
+		$value = sprintf( '%s:%s', wp_unslash( $_GET['login'] ), wp_unslash( $_GET['key'] ) );
+		setcookie( $rp_cookie, $value, 0, $rp_path, COOKIE_DOMAIN, is_ssl(), true );
+		wp_safe_redirect( remove_query_arg( array( 'key', 'login' ) ) );
+		exit;
+	}
+
+	if ( isset( $_COOKIE[ $rp_cookie ] ) && 0 < strpos( $_COOKIE[ $rp_cookie ], ':' ) ) {
+		list( $rp_login, $rp_key ) = explode( ':', wp_unslash( $_COOKIE[ $rp_cookie ] ), 2 );
+		$user = check_password_reset_key( $rp_key, $rp_login );
+		if ( isset( $_POST['pass1'] ) && ! hash_equals( $rp_key, $_POST['rp_key'] ) ) {
+			$user = false;
+		}
+	} else {
+		$user = false;
+	}
+
+	if ( ! $user || is_wp_error( $user ) ) {
+		setcookie( $rp_cookie, ' ', time() - YEAR_IN_SECONDS, $rp_path, COOKIE_DOMAIN, is_ssl(), true );
+		if ( $user && $user->get_error_code() === 'expired_key' )
+			wp_redirect( site_url( 'wp-login.php?action=lostpassword&error=expiredkey' ) );
+		else
+			wp_redirect( site_url( 'wp-login.php?action=lostpassword&error=invalidkey' ) );
+		exit;
+	}
+
+	$errors = new WP_Error();
+
+	if ( isset($_POST['pass1']) && $_POST['pass1'] != $_POST['pass2'] )
+		$errors->add( 'password_reset_mismatch', __( 'The passwords do not match.' ) );
+
+
+	/**
+	 * Fires before the password reset procedure is validated.
+	 *
+	 * @since 3.5.0
+	 *
+	 * @param object           $errors WP Error object.
+	 * @param WP_User|WP_Error $user   WP_User object if the login and reset key match. WP_Error object otherwise.
+	 */
+     
+    ob_start();
+
+	do_action( 'validate_password_reset', $errors, $user );
+    
+    $print->reset_validate_password_reset = ob_get_clean();
+    $print->rp_cookie = $rp_cookie;
+    $print->errors = $errors;
+
+	if ( ( ! $errors->get_error_code() ) && isset( $_POST['pass1'] ) && !empty( $_POST['pass1'] ) ) {
+		reset_password($user, $_POST['pass1']);
+		setcookie( $rp_cookie, ' ', time() - YEAR_IN_SECONDS, $rp_path, COOKIE_DOMAIN, is_ssl(), true );
+
+        $print->login_header_title = __( 'Password Reset' );
+        $print->login_header_message = '<p class="message reset-pass">' . __( 'Your password has been reset.' ) . ' <a href="' . esc_url( wp_login_url() ) . '">' . __( 'Log in' ) . '</a></p>';
+
+        login_footer();
+		return $print;
+	}
+
+	wp_enqueue_script('utils');
+	wp_enqueue_script('user-profile');
+
+    $print->login_header_title = __('Reset Password');
+    $print->login_header_message = '<p class="message reset-pass">' . __('Enter your new password below.') . '</p>';
+    $print->login_header_errors = $errors;
+
+    $print->network_site_url = esc_url( network_site_url( 'wp-login.php?action=resetpass', 'login_post' ) );
+    $print->rp_login = echo esc_attr( $rp_login );
+    $print->wp_generate_password = esc_attr( wp_generate_password( 16 ) );
+    $print->wp_get_password_hint = wp_get_password_hint();
+
+	/**
+	 * Fires following the 'Strength indicator' meter in the user password reset form.
+	 *
+	 * @since 3.9.0
+	 *
+	 * @param WP_User $user User object of the user whose password is being reset.
+	 */
+
+    ob_start();
+
+	do_action( 'resetpass_form', $user );
+
+    $print->reset_resetpass_form = ob_get_clean();
+    $print->rp_key = esc_attr( $rp_key );
+    $print->wp_login_url = esc_url( wp_login_url() );
+
+
+    if ( get_option( 'users_can_register' ) ) :
+        $registration_url = sprintf( '<a href="%s">%s</a>', esc_url( wp_registration_url() ), __( 'Register' ) );
+
+        /** This filter is documented in wp-includes/general-template.php */
+        $print->user_register_filter =  ' | ' . apply_filters( 'register', $registration_url );
+    endif;
+
+
+    login_footer('user_pass');
+
+return $print;
+}
+?>

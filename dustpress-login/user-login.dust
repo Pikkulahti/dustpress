@@ -103,3 +103,44 @@ endif;
     </html>
 
 {/login_footer}
+
+{#login_state_resetpass}
+
+{print.reset_validate_password_reset}
+
+<form name="resetpassform" id="resetpassform" action="{print.network_site_url}" method="post" autocomplete="off">
+	<input type="hidden" id="user_login" value="{print.rp_login}" autocomplete="off" />
+
+	<div class="user-pass1-wrap">
+		<p>
+			<label for="pass1">{@s s='New password'}</label>
+		</p>
+
+		<div class="wp-pwd">
+			<span class="password-input-wrapper">
+				<input type="password" data-reveal="1" data-pw="{print.wp_generate_password}" name="pass1" id="pass1" class="input" size="20" value="" autocomplete="off" aria-describedby="pass-strength-result" />
+			</span>
+			<div id="pass-strength-result" class="hide-if-no-js" aria-live="polite">{@s s='Strength indicator'}</div>
+		</div>
+	</div>
+
+	<p class="user-pass2-wrap">
+		<label for="pass2">{@s s='Confirm new password'}</label><br />
+		<input type="password" name="pass2" id="pass2" class="input" size="20" value="" autocomplete="off" />
+	</p>
+
+	<p class="description indicator-hint">{print.wp_get_password_hint}</p>
+	<br class="clear" />
+
+    {print.reset_resetpass_form}
+
+    <input type="hidden" name="rp_key" value="{print.rp_key}" />
+	<p class="submit"><input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="{@s s='Reset password'}" /></p>
+</form>
+
+<p id="nav">
+    <a href="{print.wp_login_url}">{@s s='Log in'}</a>
+    {print.user_register_filter}
+</p>
+
+{/login_stage_resetpass}

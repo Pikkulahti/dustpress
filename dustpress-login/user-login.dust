@@ -54,7 +54,7 @@
 {/login_header}
 
 
-{?login_state_password}
+{?login_state_lostpassword}
 <form name="lostpasswordform" id="lostpasswordform" action="{lost_password_action}" method="post">
 	<p>
 		<label for="user_login" >{@s s='Username or Email Address' } <br />
@@ -62,21 +62,122 @@
 	</p>
 	{lostpassword_form_output}
 	<input type="hidden" name="redirect_to" value="{redirect_to}" />
-	<p class="submit"><input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="<?php esc_attr_e('Get New Password'); ?>" /></p>
+	<p class="submit"><input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="{print.get_new_pass}" /></p>
 </form>
 
 <p id="nav">
-<a href="<?php echo esc_url( wp_login_url() ); ?>"><?php _e('Log in') ?></a>
-<?php
-if ( get_option( 'users_can_register' ) ) :
-	$registration_url = sprintf( '<a href="%s">%s</a>', esc_url( wp_registration_url() ), __( 'Register' ) );
-
-	/** This filter is documented in wp-includes/general-template.php */
-	echo ' | ' . apply_filters( 'register', $registration_url );
-endif;
-?>
+<a href="{print.login_url|s}"> {@s s='Log in'} </a>
+{ print.registration_url_print }
 </p>
-{/login_state_password}
+{/login_state_lostpassword}
+
+
+{#login_state_register}
+<form name="registerform" id="registerform" action="{print.form_action}" method="post" novalidate="novalidate">
+	<p>
+		<label for="user_login">{@s s='Username'}<br />
+		<input type="text" name="user_login" id="user_login" class="input" value="{print.user_login_value}" size="20" /></label>
+	</p>
+	<p>
+		<label for="user_email">{@s s='Email'}<br />
+		<input type="email" name="user_email" id="user_email" class="input" value="{print.user_email_value}" size="25" /></label>
+	</p>
+    
+    {print.register_form_output}
+
+	<p id="reg_passmail">{@s s='Registration confirmation will be emailed to you.'}</p>
+	<br class="clear" />
+	<input type="hidden" name="redirect_to" value="{print.redirect_to}" />
+	<p class="submit"><input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="{print.wp_submit_value}" /></p>
+</form>
+
+<p id="nav">
+<a href="{ print.login_url }">{@s s='Log in'}</a> |
+<a href="{ print.wp_lostpassword_url }">{@s s='Lost your password?}</a>
+</p>
+
+{#login_stage_register}
+
+
+{#login_stage_login}
+
+
+<form name="loginform" id="loginform" action="{print.print->loginform_action}" method="post">
+	<p>
+		<label for="user_login">{@s s='Username or Email Address'} <br />
+		<input type="text" name="log" id="user_login" {print.aria_describedby_error} class="input" value="{print.log_value}" size="20" /></label>
+	</p>
+	<p>
+		<label for="user_pass">{@s s=Password'}<br />
+		<input type="password" name="pwd" id="user_pass" {print.aria_describedby_error}class="input" value="" size="20" /></label>
+	</p>
+	<?php
+	/**
+	 * Fires following the 'Password' field in the login form.
+	 *
+	 * @since 2.1.0
+	 */
+
+	{ print.login_form_output }
+	
+	<p class="forgetmenot"><label for="rememberme"><input name="rememberme" type="checkbox" id="rememberme" value="forever" {print.rememberme} /> {print.e_rememberme} </label></p>
+	<p class="submit">
+		<input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="{print.e_log_in}" />
+
+    {@eq key=print.interim_login value="true"}
+		<input type="hidden" name="interim-login" value="1" />
+    {:else}
+		<input type="hidden" name="redirect_to" value="{print.redirect_to_value}" />
+    {/eq}
+    {@eq key=print.customize_login value="true"}
+		<input type="hidden" name="customize-login" value="1" />
+    {/eq}
+		<input type="hidden" name="testcookie" value="1" />
+	</p>
+</form>
+
+    {@eq key=print.interim_login value="false"}
+        {?print.lostpassword_url}
+        <p id="nav">
+        <?php if ( ! isset( $_GET['checkemail'] ) || ! in_array( $_GET['checkemail'], array( 'confirm', 'newpass' ) ) ) :
+            {?print.registration_url}
+                $registration_url = sprintf( '<a href="%s">%s</a>', esc_url( wp_registration_url() ), __( 'Register' ) );
+
+                /** This filter is documented in wp-includes/general-template.php */
+                echo apply_filters( 'register', $registration_url ) . ' | ';
+            {/print.registration_url}
+            ?>
+            <a href="{ print.lostpassword_url }">{@s s='Lost your password?'}</a>
+        {/print.lostpassword_url}
+        </p>
+    {/eq}
+
+<script type="text/javascript">
+function wp_attempt_focus(){
+setTimeout( function(){ try{
+{print.js.user_login}
+d.focus();
+d.select();
+} catch(e){}
+}, 200);
+}
+{ print.js.attempt_focus }
+if(typeof wpOnload=='function')wpOnload();
+{@eq key=print.interim_login value="true"}
+(function(){
+try {
+	var i, links = document.getElementsByTagName('a');
+	for ( i in links ) {
+		if ( links[i].href )
+			links[i].target = '_blank';
+	}
+} catch(e){}
+}());
+{/eq}
+
+</script>
+
+{/login_stage_login}
 
 
 

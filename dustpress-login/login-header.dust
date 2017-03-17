@@ -1,0 +1,38 @@
+    <!DOCTYPE html>
+    <!--[if IE 8]>
+        <html xmlns="http://www.w3.org/1999/xhtml" class="ie8">
+    <![endif]-->
+    <!--[if !(IE 8) ]><!-->
+        <html xmlns="http://www.w3.org/1999/xhtml">
+    <!--<![endif]--> 
+    <head>
+    <meta http-equiv="Content-Type" content="{WP.html_type}; charset={WP.charset}" />
+    <title>{WP.title}</title>
+
+    if ( 'loggedout' == $wp_error->get_error_code() ) {
+
+        <script>if("sessionStorage" in window){try{for(var key in sessionStorage){if(key.indexOf("wp-autosave-")!=-1){sessionStorage.removeItem(key)}}}catch(e){}};</script>
+    }
+
+if ( $interim_login ) {
+    <style type="text/css">html{background-color: transparent;}</style>
+}
+
+
+    </head>
+    <body class="login {print.header.classes}">
+
+    <div id="login">
+        <h1><a href="{print.header.login_url}" title="{print.header.login_title}" tabindex="-1">{WP.name}</a></h1>
+        {#print.header.errors}
+        <div id="login_error">
+            {.}
+        </div>
+        {/print.header.errors}
+        {#print.header.messages}
+        <p class="message">
+            {.}
+        </p>
+        {/print.header.messages}
+
+{!End!}

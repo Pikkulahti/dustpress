@@ -1,0 +1,105 @@
+{#login_header}
+    <!DOCTYPE html>
+    <!--[if IE 8]>
+        <html xmlns="http://www.w3.org/1999/xhtml" class="ie8">
+    <![endif]-->
+    <!--[if !(IE 8) ]><!-->
+        <html xmlns="http://www.w3.org/1999/xhtml">
+    <!--<![endif]--> 
+ 
+    <meta http-equiv="Content-Type" content="{WP.html_type}; charset={WP.charset}" />
+    <meta name="viewport" content="width=device-width" />
+
+    <title>{WP.title}</title>
+
+    {print.login_enqueue_scripts_output|s}
+
+    {@eq key=state.error value='loggedout'}
+        <script>if("sessionStorage" in window){try{for(var key in sessionStorage){if(key.indexOf("wp-autosave-")!=-1){sessionStorage.removeItem(key)}}}catch(e){}};</script>
+    {/eq}
+
+    {print.login_head_output|s}
+    
+    {?state.interim_login}
+        <style type="text/css">html{background-color: transparent;}</style>
+    {/state.interim_login}
+
+    {?state.shakejs}
+        <script type="text/javascript">
+        addLoadEvent = function(func){if(typeof jQuery!="undefined")jQuery(document).ready(func);else if(typeof wpOnload!='function'){wpOnload=func;}else{var oldonload=wpOnload;wpOnload=function(){oldonload();func();}}};
+        function s(id,pos){g(id).left=pos+'px';}
+        function g(id){return document.getElementById(id).style;}
+        function shake(id,a,d){c=a.shift();s(id,c);if(a.length>0){setTimeout(function(){shake(id,a,d);},d);}else{try{g(id).position='static';wp_attempt_focus();}catch(e){}}}
+        addLoadEvent(function(){ var p=new Array(15,30,15,0,-15,-30,-15,0);p=p.concat(p.concat(p));var i=document.forms[0].id;g(i).position='relative';shake(i,p,20);});
+        </script>
+    {/state.shakejs}
+
+    </head>
+    <body class="login {print.classes}">
+    {print.login_header_output}
+
+    <div id="login">
+        <h1><a href="{print.login_url}" title="{print.login_title}" tabindex="-1">{WP.name}</a></h1>
+        {#print.errors}
+        <div id="login_error">
+            {.}
+        </div>
+        {/print.errors}
+        {#print.messages}
+        <p class="message">
+            {.}
+        </p>
+        {/print.messages}
+
+{/login_header}
+
+
+{?login_state_password}
+<form name="lostpasswordform" id="lostpasswordform" action="{lost_password_action}" method="post">
+	<p>
+		<label for="user_login" >{@s s='Username or Email Address' } <br />
+		<input type="text" name="user_login" id="user_login" class="input" value="{'esc_user_login'}" size="20" /></label>
+	</p>
+	{lostpassword_form_output}
+	<input type="hidden" name="redirect_to" value="{redirect_to}" />
+	<p class="submit"><input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="<?php esc_attr_e('Get New Password'); ?>" /></p>
+</form>
+
+<p id="nav">
+<a href="<?php echo esc_url( wp_login_url() ); ?>"><?php _e('Log in') ?></a>
+<?php
+if ( get_option( 'users_can_register' ) ) :
+	$registration_url = sprintf( '<a href="%s">%s</a>', esc_url( wp_registration_url() ), __( 'Register' ) );
+
+	/** This filter is documented in wp-includes/general-template.php */
+	echo ' | ' . apply_filters( 'register', $registration_url );
+endif;
+?>
+</p>
+{/login_state_password}
+
+
+
+{#login_footer}
+
+    {?print.backtoblog}
+        <p id="backtoblog"><a href="{WP.url}">
+            {print.backtoblog}
+        </a></p>
+    {/print.backtoblog}
+
+    </div>
+
+    {?print.js.input_id}
+        <script type="text/javascript">
+        try{document.getElementById('{print.js.input_id}').focus();}catch(e){}
+        if(typeof wpOnload=='function')wpOnload();
+        </script>
+    {/print.js.input_id}
+
+    {print.login_footer_output}
+    <div class="clear"></div>
+    </body>
+    </html>
+
+{/login_footer}

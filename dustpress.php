@@ -33,7 +33,10 @@ final class DustPress {
 	private $paths;
 
 	// Are we on an activation page
-	private $activate;
+	private $activate_page;
+
+	// Are we on an activation page
+	private $login_page;
 
 	// Registered custom ajax functions
 	private $ajax_functions;
@@ -85,25 +88,28 @@ final class DustPress {
                 }
             }
         }
-
    
-		// Add create_instance to right action hook if we are not on the admin side
-		if ( $this->want_autoload() ) {
+
+		if ( $this->is_dustpress_ajax() ) {
+			add_filter( 'template_include', [ $this, 'create_ajax_instance' ] );
+		} else {
 			add_filter( 'template_include', [ $this, 'create_instance' ] );
-			
 			// If we are on wp-activate.php hook into activate_header
 			if ( strpos( $_SERVER['REQUEST_URI'], 'wp-activate.php' ) !== false ) {
-				$this->activate = true;
+				$this->activate_page = true;
 				// Run create_instance for use partial and model
 				add_action( 'activate_header', [ $this, 'create_instance' ] );
 				// Kill original wp-activate.php execution
 				add_action( 'activate_header', function() { die(); } );
+			} else if ( strpos( $_SERVER['REQUEST_URI'], 'wp-login.php' ) !== false ) {
+				$this->login_page = true;
+				// Run create_instance for use partial and model
+				add_action( 'login_init', [ $this, 'create_instance' ] );
+				// Kill original wp-login.php execution
+				add_action( 'login_init', function() { die(); } );
 			}
 		}
-		else if ( $this->is_dustpress_ajax() ) {
-			add_filter( 'template_include', [ $this, 'create_ajax_instance' ] );
-		}
-
+	
 		// Initialize settings
 		add_action( 'init', [ $this, 'init_settings' ] );
 
@@ -126,7 +132,22 @@ final class DustPress {
 		// Initialize an array for debugging.
 		$debugs = [];
 
-		if ( ! $this->activate ) {
+		if (  $this->activate_page )  {
+			// Use user-activate.php and user-activate.dust to replace wp-activate.php
+			$template = apply_filters( 'dustpress/template/useractivate', 'UserActivate' );
+			$debugs[] = $template;
+
+			// Prevent 404 on multisite sub pages.
+			global $wp_query;
+			$wp_query->is_404 = false;
+
+		} else if ( $this->login_page ) {
+			
+			// Use user-login.php and user-login.dust to replace wp-login.php
+			$template = apply_filters( 'dustpress/template/userlogin', 'UserLogin' );
+			$debugs[] = $template;			
+		 
+		} else {
 
 			if ( is_object( $post ) && isset( $post->ID ) ) {
 				$post_id = $post->ID;
@@ -148,16 +169,7 @@ final class DustPress {
 			// Get current template name tidied up a bit.
 			$template = $this->get_template_filename( $debugs );
 		}
-		else {
-			// Use user-activate.php and user-activate.dust to replace wp-activate.php
-			$template = apply_filters( 'dustpress/template/useractivate', 'UserActivate' );
-			$debugs[] = $template;
 
-			// Prevent 404 on multisite sub pages.
-			global $wp_query;
-			$wp_query->is_404 = false;
-
-		}
 
 		$template = apply_filters( "dustpress/template", $template );
 

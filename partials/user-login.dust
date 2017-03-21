@@ -1,3 +1,4 @@
+
 {#login_header}
     <!DOCTYPE html>
     <!--[if IE 8]>
@@ -14,23 +15,23 @@
 
     {print.login_enqueue_scripts_output|s}
 
-    {@eq key=state.error value='loggedout'}
-        <script>if("sessionStorage" in window){try{for(var key in sessionStorage){if(key.indexOf("wp-autosave-")!=-1){sessionStorage.removeItem(key)}}}catch(e){}};</script>
+    {@eq key=state.error value="loggedout" }
+        <script>if("sessionStorage" in window){~lb}try{~lb}for(var key in sessionStorage){~lb}if(key.indexOf("wp-autosave-")!=-1){~lb}sessionStorage.removeItem(key){~rb}catch(e){~lb}{~rb};</script>
     {/eq}
 
     {print.login_head_output|s}
     
     {?state.interim_login}
-        <style type="text/css">html{background-color: transparent;}</style>
+        <style type="text/css">html{~lb}background-color: transparent;{~rb}</style>
     {/state.interim_login}
 
     {?state.shakejs}
         <script type="text/javascript">
-        addLoadEvent = function(func){if(typeof jQuery!="undefined")jQuery(document).ready(func);else if(typeof wpOnload!='function'){wpOnload=func;}else{var oldonload=wpOnload;wpOnload=function(){oldonload();func();}}};
-        function s(id,pos){g(id).left=pos+'px';}
-        function g(id){return document.getElementById(id).style;}
-        function shake(id,a,d){c=a.shift();s(id,c);if(a.length>0){setTimeout(function(){shake(id,a,d);},d);}else{try{g(id).position='static';wp_attempt_focus();}catch(e){}}}
-        addLoadEvent(function(){ var p=new Array(15,30,15,0,-15,-30,-15,0);p=p.concat(p.concat(p));var i=document.forms[0].id;g(i).position='relative';shake(i,p,20);});
+            addLoadEvent = function(func){~lb}if(typeof jQuery!="undefined")jQuery(document).ready(func);else if(typeof wpOnload!='function'){~lb}wpOnload=func;{~rb}else{~lb}var oldonload=wpOnload;wpOnload=function(){~lb}oldonload();func();{~rb};
+            function s(id,pos){~lb}g(id).left=pos+'px';{~rb}
+            function g(id){~lb}return document.getElementById(id).style;{~rb}
+            function shake(id,a,d){~lb}c=a.shift();s(id,c);if(a.length>0){~lb}setTimeout(function(){~lb}shake(id,a,d);{~rb},d);{~rb}else{~lb}try{~lb}g(id).position='static';wp_attempt_focus();{~rb}catch(e){~lb}{~rb}
+            addLoadEvent(function(){~lb} var p=new Array(15,30,15,0,-15,-30,-15,0);p=p.concat(p.concat(p));var i=document.forms[0].id;g(i).position='relative';shake(i,p,20);{~rb});
         </script>
     {/state.shakejs}
 
@@ -57,7 +58,7 @@
 {?login_state_lostpassword}
 <form name="lostpasswordform" id="lostpasswordform" action="{lost_password_action}" method="post">
 	<p>
-		<label for="user_login" >{@s s='Username or Email Address' } <br />
+		<label for="user_login" >{@s s="Username or Email Address" /} <br />
 		<input type="text" name="user_login" id="user_login" class="input" value="{'esc_user_login'}" size="20" /></label>
 	</p>
 	{lostpassword_form_output}
@@ -66,7 +67,7 @@
 </form>
 
 <p id="nav">
-<a href="{print.login_url|s}"> {@s s='Log in'} </a>
+<a href="{print.login_url|s}"> {@s s="Log in" /} </a>
 { print.registration_url_print }
 </p>
 {/login_state_lostpassword}
@@ -75,111 +76,95 @@
 {#login_state_register}
 <form name="registerform" id="registerform" action="{print.form_action}" method="post" novalidate="novalidate">
 	<p>
-		<label for="user_login">{@s s='Username'}<br />
+		<label for="user_login">{@s s="Username" /}<br />
 		<input type="text" name="user_login" id="user_login" class="input" value="{print.user_login_value}" size="20" /></label>
 	</p>
 	<p>
-		<label for="user_email">{@s s='Email'}<br />
+		<label for="user_email">{@s s="Email" /}<br />
 		<input type="email" name="user_email" id="user_email" class="input" value="{print.user_email_value}" size="25" /></label>
 	</p>
     
     {print.register_form_output}
 
-	<p id="reg_passmail">{@s s='Registration confirmation will be emailed to you.'}</p>
+	<p id="reg_passmail">{@s s="Registration confirmation will be emailed to you." /}</p>
 	<br class="clear" />
 	<input type="hidden" name="redirect_to" value="{print.redirect_to}" />
 	<p class="submit"><input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="{print.wp_submit_value}" /></p>
 </form>
 
 <p id="nav">
-<a href="{ print.login_url }">{@s s='Log in'}</a> |
-<a href="{ print.wp_lostpassword_url }">{@s s='Lost your password?}</a>
+<a href="{ print.login_url }">{@s s="Log in" /}</a> |
+<a href="{ print.wp_lostpassword_url }">{@s s="Lost your password?" /}</a>
 </p>
 
-{#login_stage_register}
+{/login_state_register}
 
-
-{#login_stage_login}
-
-
-<form name="loginform" id="loginform" action="{print.print->loginform_action}" method="post">
-	<p>
-		<label for="user_login">{@s s='Username or Email Address'} <br />
-		<input type="text" name="log" id="user_login" {print.aria_describedby_error} class="input" value="{print.log_value}" size="20" /></label>
-	</p>
-	<p>
-		<label for="user_pass">{@s s=Password'}<br />
-		<input type="password" name="pwd" id="user_pass" {print.aria_describedby_error}class="input" value="" size="20" /></label>
-	</p>
-	<?php
-	/**
-	 * Fires following the 'Password' field in the login form.
-	 *
-	 * @since 2.1.0
-	 */
-
-	{ print.login_form_output }
-	
-	<p class="forgetmenot"><label for="rememberme"><input name="rememberme" type="checkbox" id="rememberme" value="forever" {print.rememberme} /> {print.e_rememberme} </label></p>
-	<p class="submit">
-		<input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="{print.e_log_in}" />
-
-    {@eq key=print.interim_login value="true"}
-		<input type="hidden" name="interim-login" value="1" />
-    {:else}
-		<input type="hidden" name="redirect_to" value="{print.redirect_to_value}" />
-    {/eq}
-    {@eq key=print.customize_login value="true"}
-		<input type="hidden" name="customize-login" value="1" />
-    {/eq}
-		<input type="hidden" name="testcookie" value="1" />
-	</p>
-</form>
-
-    {@eq key=print.interim_login value="false"}
-        {?print.lostpassword_url}
-        <p id="nav">
-        <?php if ( ! isset( $_GET['checkemail'] ) || ! in_array( $_GET['checkemail'], array( 'confirm', 'newpass' ) ) ) :
-            {?print.registration_url}
-                $registration_url = sprintf( '<a href="%s">%s</a>', esc_url( wp_registration_url() ), __( 'Register' ) );
-
-                /** This filter is documented in wp-includes/general-template.php */
-                echo apply_filters( 'register', $registration_url ) . ' | ';
-            {/print.registration_url}
-            ?>
-            <a href="{ print.lostpassword_url }">{@s s='Lost your password?'}</a>
-        {/print.lostpassword_url}
-        </p>
-    {/eq}
+{print.js.customize_login}
 
 <script type="text/javascript">
-function wp_attempt_focus(){
-setTimeout( function(){ try{
+function wp_attempt_focus(){~lb}
+setTimeout( function(){~lb} try{~lb}
 {print.js.user_login}
 d.focus();
 d.select();
-} catch(e){}
-}, 200);
-}
-{ print.js.attempt_focus }
+{~rb} catch(e){~lb}{~rb}
+{~rb}, 200);
+{~rb}
+{~lb} print.js.attempt_focus {~rb}
 if(typeof wpOnload=='function')wpOnload();
 {@eq key=print.interim_login value="true"}
-(function(){
-try {
+(function(){~lb}
+try {~lb}
 	var i, links = document.getElementsByTagName('a');
-	for ( i in links ) {
+	for ( i in links ) {~lb}
 		if ( links[i].href )
 			links[i].target = '_blank';
-	}
-} catch(e){}
-}());
+	{~rb}
+{~rb} catch(e){~lb}{~rb}
+{~rb}());
 {/eq}
-
 </script>
 
-{/login_stage_login}
+{#login_state_resetpass}
 
+{print.reset_validate_password_reset}
 
+<form name="resetpassform" id="resetpassform" action="{print.network_site_url}" method="post" autocomplete="off">
+	<input type="hidden" id="user_login" value="{print.rp_login}" autocomplete="off" />
+
+	<div class="user-pass1-wrap">
+		<p>
+			<label for="pass1">{@s s="New password" /}</label>
+		</p>
+
+		<div class="wp-pwd">
+			<span class="password-input-wrapper">
+				<input type="password" data-reveal="1" data-pw="{print.wp_generate_password}" name="pass1" id="pass1" class="input" size="20" value="" autocomplete="off" aria-describedby="pass-strength-result" />
+			</span>
+			<div id="pass-strength-result" class="hide-if-no-js" aria-live="polite">{@s s="Strength indicator" /}</div>
+		</div>
+	</div>
+
+	<p class="user-pass2-wrap">
+		<label for="pass2">{@s s="Confirm new password" /}</label><br />
+		<input type="password" name="pass2" id="pass2" class="input" size="20" value="" autocomplete="off" />
+	</p>
+
+	<p class="description indicator-hint">{print.wp_get_password_hint}</p>
+	<br class="clear" />
+
+    {print.reset_resetpass_form}
+
+    <input type="hidden" name="rp_key" value="{print.rp_key}" />
+	<p class="submit"><input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="{@s s="Reset password" /}" /></p>
+</form>
+
+<p id="nav">
+    <a href="{print.wp_login_url}">{@s s="Log in" /}</a>
+    {print.user_register_filter}
+</p>
+
+{/login_state_resetpass}
 
 {#login_footer}
 
@@ -193,7 +178,7 @@ try {
 
     {?print.js.input_id}
         <script type="text/javascript">
-        try{document.getElementById('{print.js.input_id}').focus();}catch(e){}
+        try{~lb}document.getElementById('{print.js.input_id}').focus();{~rb}catch(e){~lb}{~rb}
         if(typeof wpOnload=='function')wpOnload();
         </script>
     {/print.js.input_id}
@@ -205,43 +190,3 @@ try {
 
 {/login_footer}
 
-{#login_state_resetpass}
-
-{print.reset_validate_password_reset}
-
-<form name="resetpassform" id="resetpassform" action="{print.network_site_url}" method="post" autocomplete="off">
-	<input type="hidden" id="user_login" value="{print.rp_login}" autocomplete="off" />
-
-	<div class="user-pass1-wrap">
-		<p>
-			<label for="pass1">{@s s='New password'}</label>
-		</p>
-
-		<div class="wp-pwd">
-			<span class="password-input-wrapper">
-				<input type="password" data-reveal="1" data-pw="{print.wp_generate_password}" name="pass1" id="pass1" class="input" size="20" value="" autocomplete="off" aria-describedby="pass-strength-result" />
-			</span>
-			<div id="pass-strength-result" class="hide-if-no-js" aria-live="polite">{@s s='Strength indicator'}</div>
-		</div>
-	</div>
-
-	<p class="user-pass2-wrap">
-		<label for="pass2">{@s s='Confirm new password'}</label><br />
-		<input type="password" name="pass2" id="pass2" class="input" size="20" value="" autocomplete="off" />
-	</p>
-
-	<p class="description indicator-hint">{print.wp_get_password_hint}</p>
-	<br class="clear" />
-
-    {print.reset_resetpass_form}
-
-    <input type="hidden" name="rp_key" value="{print.rp_key}" />
-	<p class="submit"><input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="{@s s='Reset password'}" /></p>
-</form>
-
-<p id="nav">
-    <a href="{print.wp_login_url}">{@s s='Log in'}</a>
-    {print.user_register_filter}
-</p>
-
-{/login_stage_resetpass}
